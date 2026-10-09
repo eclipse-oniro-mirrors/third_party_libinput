@@ -12146,6 +12146,39 @@ diff -Naur old/tools/libinput-record.c new/tools/libinput-record.c
  
  static const int FILE_VERSION_NUMBER = 1;
  
+@@ -1511,7 +1512,9 @@
+ 		break;
+ 	}
+ 
+-	iprintf(fp, I_EVDEV, "# Name: %s\n", libevdev_get_name(dev));
++	char *name = str_sanitize(libevdev_get_name(dev));
++	iprintf(fp, I_EVDEV, "# Name: %s\n", name ? name : "");
++	free(name);
+ 	iprintf(fp,
+ 		I_EVDEV,
+ 		"# ID: bus 0x%04x%svendor 0x%04x product 0x%04x version 0x%04x\n",
+@@ -1562,7 +1565,9 @@
+ static void
+ print_bits_info(FILE *fp, struct libevdev *dev)
+ {
+-	iprintf(fp, I_EVDEV, "name: \"%s\"\n", libevdev_get_name(dev));
++	char *name = str_sanitize(libevdev_get_name(dev));
++	iprintf(fp, I_EVDEV, "name: \"%s\"\n", name ? name : "");
++	free(name);
+ 	iprintf(fp,
+ 		I_EVDEV,
+ 		"id: [%d, %d, %d, %d]\n",
+@@ -1931,7 +1936,9 @@
+ 		if (rc != 0)
+ 			continue;
+ 
+-		fprintf(stderr, "%s%s:	%s\n", prefix, path, libevdev_get_name(device));
++		char *name = str_sanitize(libevdev_get_name(device));
++		fprintf(stderr, "%s%s:	%s\n", prefix, path, name ? name : "");
++		free(name);
+ 		libevdev_free(device);
+ 		available_devices++;
+ 	}
 diff -Naur old/udev/libinput-device-group.c new/udev/libinput-device-group.c
 --- old/udev/libinput-device-group.c	2026-01-01 00:00:00.000000000 +0800
 +++ new/udev/libinput-device-group.c	2026-01-01 00:00:00.000000000 +0800
