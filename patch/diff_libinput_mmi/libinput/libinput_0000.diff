@@ -727,7 +727,7 @@ diff -Naur old/export_include/libinput.h new/export_include/libinput.h
  /**
   * @ingroup base
   *
-@@ -3866,6 +4453,94 @@
+@@ -3866,6 +4453,97 @@
  			 libinput_log_handler log_handler);
  
  /**
@@ -749,10 +749,13 @@ diff -Naur old/export_include/libinput.h new/export_include/libinput.h
 + * @param event_touch The touch event
 + * @param key key code
 + * @param state key state, pressed or released
++ * @param time_usec event time in microseconds (caller-supplied because the base libinput_event does not contain
++ *												a time filed; the caller must obtain it via the appropriate typede
++ *												getter)
 + * @return The keyboard event
 + */
 +struct libinput_event_keyboard*
-+libinput_create_keyboard_event(struct libinput_event_touch* event_touch, int32_t key, enum libinput_key_state state);
++libinput_create_keyboard_event(struct libinput_event* event_touch, int32_t key, enum libinput_key_state state, uint64_t time_usec);
 +
 +struct event_pointer {
 +    enum libinput_event_type event_type;
@@ -807,16 +810,16 @@ diff -Naur old/export_include/libinput.h new/export_include/libinput.h
 +};
 +
 +struct libinput_event_pointer*
-+libinput_create_pointer_event(struct libinput_event_touch* event_touch, struct event_pointer eventPointer);
++libinput_create_pointer_event(struct libinput_event* event_touch, struct event_pointer eventPointer);
 +
 +struct libinput_event_pointer*
 +libinput_device_create_pointer_event(struct libinput_device* device, struct event_pointer eventPointer);
 +
 +struct libinput_event_gesture*
-+libinput_create_gesture_event(struct libinput_event_touch* event_touch, struct event_gesture eventGesture);
++libinput_create_gesture_event(struct libinput_event* event_touch, struct event_gesture eventGesture);
 +
 +struct libinput_event_touch*
-+libinput_create_touch_event(struct libinput_event_touch* event, struct event_touch eventTouch);
++libinput_create_touch_event(struct libinput_event* event, struct event_touch eventTouch);
 +
 +/**
   * @defgroup seat Initialization and manipulation of seats
@@ -8260,17 +8263,17 @@ diff -Naur old/src/libinput.c new/src/libinput.c
 +}
 +
 +LIBINPUT_EXPORT struct libinput_event_keyboard*
-+libinput_create_keyboard_event(struct libinput_event_touch* event_touch,
-+             int32_t key, enum libinput_key_state state)
++libinput_create_keyboard_event(struct libinput_event* event_touch,
++             int32_t key, enum libinput_key_state state, uint64_t time_usec)
 +{
 +    struct libinput_event_keyboard *key_event;
 +
 +    key_event = zalloc(sizeof *key_event);
 +
 +    *key_event = (struct libinput_event_keyboard) {
-+        .base.device = event_touch->base.device,
++        .base.device = event_touch->device,
 +        .base.type = LIBINPUT_EVENT_KEYBOARD_KEY,
-+        .time = event_touch->time,
++        .time = time_usec,
 +        .key = key,
 +        .state = state,
 +    };
@@ -8279,14 +8282,14 @@ diff -Naur old/src/libinput.c new/src/libinput.c
 +}
 +
 +LIBINPUT_EXPORT struct libinput_event_pointer*
-+libinput_create_pointer_event(struct libinput_event_touch* event_touch, struct event_pointer eventPointer)
++libinput_create_pointer_event(struct libinput_event* event_touch, struct event_pointer eventPointer)
 +{
 +    struct libinput_event_pointer *pointer_event;
 +
 +	pointer_event = zalloc(sizeof *pointer_event);
 +
 +	*pointer_event = (struct libinput_event_pointer) {
-+		.base.device = event_touch->base.device,
++		.base.device = event_touch->device,
 +		.base.type = eventPointer.event_type,
 +	    .delta.x = eventPointer.delta_x,
 +		.delta.y = eventPointer.delta_y,
@@ -8338,14 +8341,14 @@ diff -Naur old/src/libinput.c new/src/libinput.c
 +}
 +
 +LIBINPUT_EXPORT struct libinput_event_gesture*
-+libinput_create_gesture_event(struct libinput_event_touch* event_touch, struct event_gesture eventGesture)
++libinput_create_gesture_event(struct libinput_event* event_touch, struct event_gesture eventGesture)
 +{
 +    struct libinput_event_gesture *gesture_event;
 +
 +	gesture_event = zalloc(sizeof *gesture_event);
 +
 +	*gesture_event = (struct libinput_event_gesture) {
-+		.base.device = event_touch->base.device,
++		.base.device = event_touch->device,
 +		.base.type = eventGesture.event_type,
 +		.finger_count = eventGesture.finger_count,
 +		.cancelled = eventGesture.cancelled,
@@ -8372,14 +8375,14 @@ diff -Naur old/src/libinput.c new/src/libinput.c
 +}
 +
 +LIBINPUT_EXPORT struct libinput_event_touch*
-+libinput_create_touch_event(struct libinput_event_touch* event, struct event_touch eventTouch)
++libinput_create_touch_event(struct libinput_event* event, struct event_touch eventTouch)
 +{
 +    struct libinput_event_touch *touch_event;
 +
 +    touch_event = zalloc(sizeof *touch_event);
 +
 +	*touch_event = (struct libinput_event_touch) {
-+		.base.device = event->base.device,
++		.base.device = event->device,
 +		.base.type = eventTouch.event_type,
 +        .slot = eventTouch.slot,
 +        .seat_slot = eventTouch.seat_slot,
@@ -11108,7 +11111,7 @@ diff -Naur old/src/libinput.h new/src/libinput.h
  /**
   * @ingroup base
   *
-@@ -3866,6 +4453,94 @@
+@@ -3866,6 +4453,97 @@
  			 libinput_log_handler log_handler);
  
  /**
@@ -11130,10 +11133,13 @@ diff -Naur old/src/libinput.h new/src/libinput.h
 + * @param event_touch The touch event
 + * @param key key code
 + * @param state key state, pressed or released
++ * @param time_usec event time in microseconds (caller-supplied because the base libinput_event does not contain
++ *												a time filed; the caller must obtain it via the appropriate typede
++ *												getter)
 + * @return The keyboard event
 + */
 +struct libinput_event_keyboard*
-+libinput_create_keyboard_event(struct libinput_event_touch* event_touch, int32_t key, enum libinput_key_state state);
++libinput_create_keyboard_event(struct libinput_event* event_touch, int32_t key, enum libinput_key_state state, uint64_t time_usec);
 +
 +struct event_pointer {
 +    enum libinput_event_type event_type;
@@ -11188,16 +11194,16 @@ diff -Naur old/src/libinput.h new/src/libinput.h
 +};
 +
 +struct libinput_event_pointer*
-+libinput_create_pointer_event(struct libinput_event_touch* event_touch, struct event_pointer eventPointer);
++libinput_create_pointer_event(struct libinput_event* event_touch, struct event_pointer eventPointer);
 +
 +struct libinput_event_pointer*
 +libinput_device_create_pointer_event(struct libinput_device* device, struct event_pointer eventPointer);
 +
 +struct libinput_event_gesture*
-+libinput_create_gesture_event(struct libinput_event_touch* event_touch, struct event_gesture eventGesture);
++libinput_create_gesture_event(struct libinput_event* event_touch, struct event_gesture eventGesture);
 +
 +struct libinput_event_touch*
-+libinput_create_touch_event(struct libinput_event_touch* event, struct event_touch eventTouch);
++libinput_create_touch_event(struct libinput_event* event, struct event_touch eventTouch);
 +
 +/**
   * @defgroup seat Initialization and manipulation of seats
@@ -11484,7 +11490,7 @@ diff -Naur old/src/path-seat.c new/src/path-seat.c
 +#endif
  		seat_logical_name = safe_strdup(seat_prop ? seat_prop : default_seat_name);
  	}
-
+ 
 @@ -365,25 +369,26 @@
  	struct libinput_device *device;
  
