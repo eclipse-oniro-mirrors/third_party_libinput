@@ -8238,7 +8238,7 @@ diff -Naur old/src/libinput.c new/src/libinput.c
  };
  
  struct libinput_event_tablet_pad {
-@@ -337,6 +362,168 @@
+@@ -337,6 +362,167 @@
  	libinput->log_handler = log_handler;
  }
  
@@ -8266,7 +8266,6 @@ diff -Naur old/src/libinput.c new/src/libinput.c
 +libinput_create_keyboard_event(struct libinput_event* event_touch,
 +             int32_t key, enum libinput_key_state state, uint64_t time_usec)
 +{
-+	struct libinput_device *device = event_touch->device;
 +    struct libinput_event_keyboard *key_event;
 +
 +    key_event = zalloc(sizeof *key_event);
