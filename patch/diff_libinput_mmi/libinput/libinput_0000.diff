@@ -755,7 +755,7 @@ diff -Naur old/export_include/libinput.h new/export_include/libinput.h
 + * @return The keyboard event
 + */
 +struct libinput_event_keyboard*
-+libinput_create_keyboard_event(struct libinput_event* event_touch, int32_t key, enum libinput_key_state state, unit64_t time_usec);
++libinput_create_keyboard_event(struct libinput_event* event_touch, int32_t key, enum libinput_key_state state, uint64_t time_usec);
 +
 +struct event_pointer {
 +    enum libinput_event_type event_type;
@@ -8238,7 +8238,7 @@ diff -Naur old/src/libinput.c new/src/libinput.c
  };
  
  struct libinput_event_tablet_pad {
-@@ -337,6 +362,167 @@
+@@ -337,6 +362,168 @@
  	libinput->log_handler = log_handler;
  }
  
@@ -8264,7 +8264,7 @@ diff -Naur old/src/libinput.c new/src/libinput.c
 +
 +LIBINPUT_EXPORT struct libinput_event_keyboard*
 +libinput_create_keyboard_event(struct libinput_event* event_touch,
-+             int32_t key, enum libinput_key_state state, unit64_t time_usec)
++             int32_t key, enum libinput_key_state state, uint64_t time_usec)
 +{
 +	struct libinput_device *device = event_touch->device;
 +    struct libinput_event_keyboard *key_event;
@@ -11140,7 +11140,7 @@ diff -Naur old/src/libinput.h new/src/libinput.h
 + * @return The keyboard event
 + */
 +struct libinput_event_keyboard*
-+libinput_create_keyboard_event(struct libinput_event* event_touch, int32_t key, enum libinput_key_state state, unit64_t time_usec);
++libinput_create_keyboard_event(struct libinput_event* event_touch, int32_t key, enum libinput_key_state state, uint64_t time_usec);
 +
 +struct event_pointer {
 +    enum libinput_event_type event_type;
